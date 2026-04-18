@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CBT Engine | PrepPace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-tab { border-bottom: 4px solid #2563eb; color: #2563eb; }
+        .p-btn { width: 40px; height: 40px; border: 1px solid #e2e8f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+        .p-answered { background: #22c55e; color: white; border-color: #22c55e; }
+        .p-review { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .p-current { border: 2px solid #2563eb; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <header class="bg-white border-b px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+        <div class="font-bold text-xl text-blue-600">PrepPace CBT</div>
+        <div id="timer" class="text-xl font-mono font-bold bg-red-50 text-red-600 px-4 py-1 rounded">180:00</div>
+        <button onclick="submitTest()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold">Submit</button>
+    </header>
+
+    <nav id="sectionTabs" class="bg-white border-b flex px-6 space-x-8"></nav>
+
+    <div class="max-w-[1440px] mx-auto grid grid-cols-12 gap-6 p-6">
+        <div class="col-span-12 lg:col-span-9 bg-white p-8 rounded-xl shadow-sm min-h-[600px] flex flex-col justify-between">
+            <div id="questionDisplay">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="qTitle" class="text-slate-400 font-bold uppercase tracking-widest text-sm">Physics - Question 1</h2>
+                </div>
+                <div id="qImageContainer" class="mb-8 border rounded-lg p-4 bg-slate-50">
+                    <img id="qImage" src="" alt="Question Content" class="max-w-full h-auto mx-auto">
+                </div>
+                <div id="options" class="grid grid-cols-2 gap-4">
+                    <button onclick="saveAns('A')" id="btnA" class="opt-btn p-4 border rounded-xl text-left hover:bg-blue-50">Option A</button>
+                    <button onclick="saveAns('B')" id="btnB" class="opt-btn p-4 border rounded-xl text-left hover:bg-blue-50">Option B</button>
+                    <button onclick="saveAns('C')" id="btnC" class="opt-btn p-4 border rounded-xl text-left hover:bg-blue-50">Option C</button>
+                    <button onclick="saveAns('D')" id="btnD" class="opt-btn p-4 border rounded-xl text-left hover:bg-blue-50">Option D</button>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t flex justify-between items-center">
+                <button onclick="toggleReview()" class="bg-purple-100 text-purple-700 px-6 py-2 rounded-lg font-bold">Mark for Review</button>
+                <div class="space-x-4">
+                    <button onclick="navigate(-1)" class="px-6 py-2 font-bold text-slate-500">Previous</button>
+                    <button onclick="navigate(1)" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold">Save & Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-3 bg-white p-6 rounded-xl shadow-sm h-fit">
+            <h4 class="font-bold mb-4">Question Palette</h4>
+            <div id="paletteGrid" class="grid grid-cols-5 gap-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL STATE
+        let testData = {}; // Fetched from JSON
+        let currentSection = "";
+        let currentIndex = 0;
+        let userAnswers = {}; // { "Physics_0": "A" }
+        let reviewMarks = new Set(); 
+
+        // 1. Initial Load
+        async function loadTestData() {
+            // In production: const res = await fetch('data/test1.json'); testData = await res.json();
+            testData = {
+                "Physics": [{img: "images/p_q1.png", ans: "C"}, {img: "images/p_q2.png", ans: "A"}],
+                "Chemistry": [{img: "images/c_q1.png", ans: "B"}],
+                "Mathematics": [{img: "images/m_q1.png", ans: "D"}]
+            };
+            currentSection = Object.keys(testData)[0];
+            renderTabs();
+            renderQuestion();
+        }
+
+        function renderTabs() {
+            const tabs = document.getElementById('sectionTabs');
+            tabs.innerHTML = Object.keys(testData).map(sec => `
+                <button onclick="switchSection('${sec}')" class="py-3 font-bold ${currentSection === sec ? 'active-tab' : 'text-slate-400'}">${sec}</button>
+            `).join('');
+        }
+
+        function switchSection(sec) {
+            currentSection = sec;
+            currentIndex = 0;
+            renderTabs();
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = testData[currentSection][currentIndex];
+            document.getElementById('qTitle').innerText = `${currentSection} - Question ${currentIndex + 1}`;
+            document.getElementById('qImage').src = q.img;
+            
+            // Highlight selected option
+            const saved = userAnswers[`${currentSection}_${currentIndex}`];
+            document.querySelectorAll('.opt-btn').forEach(btn => {
+                btn.className = "opt-btn p-4 border rounded-xl text-left hover:bg-blue-50 " + 
+                    (btn.id === 'btn' + saved ? "bg-blue-600 text-white border-blue-600" : "bg-white");
+            });
+            renderPalette();
+        }
+
+        function saveAns(val) {
+            userAnswers[`${currentSection}_${currentIndex}`] = val;
+            renderQuestion();
+        }
+
+        function toggleReview() {
+            const key = `${currentSection}_${currentIndex}`;
+            reviewMarks.has(key) ? reviewMarks.delete(key) : reviewMarks.add(key);
+            renderPalette();
+        }
+
+        function navigate(step) {
+            if (currentIndex + step >= 0 && currentIndex + step < testData[currentSection].length) {
+                currentIndex += step;
+                renderQuestion();
+            }
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = testData[currentSection].map((_, i) => {
+                const key = `${currentSection}_${i}`;
+                let cls = "p-btn ";
+                if(currentIndex === i) cls += "p-current ";
+                if(reviewMarks.has(key)) cls += "p-review ";
+                else if(userAnswers[key]) cls += "p-answered ";
+                return `<div onclick="currentIndex=${i};renderQuestion()" class="${cls}">${i+1}</div>`;
+            }).join('');
+        }
+
+        function submitTest() {
+            if(confirm("Are you sure you want to submit?")) {
+                // Scoring logic here...
+                window.location.href = "exam.html";
+            }
+        }
+
+        loadTestData();
+    </script>
+</body>
+</html>
