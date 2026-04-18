@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrepPace | Exam Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <nav class="bg-white border-b p-4 shadow-sm">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">PrepPace.in</h1>
+            <button class="text-slate-600 font-medium">Student Login</button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-extrabold mb-8 text-center">Select Your Exam Target</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <script>
+                const exams = [
+                    { id: 'jee-mains', name: 'JEE Mains', desc: 'Engineering Entrance' },
+                    { id: 'jee-adv', name: 'JEE Advanced', desc: 'IIT Admission' },
+                    { id: 'bitsat', name: 'BITSAT', desc: 'BITS Pilani Entrance' },
+                    { id: 'mht-cet', name: 'MHT CET', desc: 'State Entrance' }
+                ];
+                exams.forEach(ex => {
+                    document.write(`
+                        <a href="exam.html?type=${ex.id}" class="bg-white p-6 rounded-2xl border hover:border-blue-500 hover:shadow-lg transition block">
+                            <h3 class="text-xl font-bold text-slate-800">${ex.name}</h3>
+                            <p class="text-slate-500 text-sm mt-1">${ex.desc}</p>
+                            <div class="mt-4 text-blue-600 font-bold text-sm">View 25+ Tests →</div>
+                        </a>
+                    `);
+                });
+            </script>
+        </div>
+    </main>
+</body>
+</html>
