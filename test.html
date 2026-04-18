@@ -141,6 +141,23 @@
         }
 
         loadTestData();
+        async function saveScoreToDatabase(email, exam, finalScore) {
+    const { data, error } = await supabase
+        .from('test_results')
+        .insert([
+            { 
+                student_email: email, 
+                exam_type: exam, 
+                score: finalScore 
+            }
+        ]);
+
+    if (error) {
+        console.error("Error saving score:", error.message);
+    } else {
+        alert("Score saved successfully to Supabase!");
+    }
+        }
     </script>
 </body>
 </html>
