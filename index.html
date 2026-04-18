@@ -40,6 +40,34 @@
                 });
             </script>
         </div>
+             // Initialize Supabase (Use your actual URL and Key)
+const supabase = supabase.createClient("YOUR_SUPABASE_URL", "YOUR_ANON_KEY");
+
+async function updateAuthUI() {
+    const { data: { user } } = await supabase.auth.getUser();
+    const authSection = document.getElementById('authSection');
+
+    if (user) {
+        // User is logged in - Show Email and Logout button
+        authSection.innerHTML = `
+            <div class="flex items-center space-x-4">
+                <span class="text-slate-600 text-sm hidden md:block">${user.email}</span>
+                <button onclick="handleLogout()" class="text-red-600 font-semibold border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50">
+                    Logout
+                </button>
+            </div>
+        `;
+    }
+}
+
+async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.reload(); // Refresh page to reset UI
+}
+
+// Run on page load
+updateAuthUI();
+        
     </main>
 </body>
 </html>
